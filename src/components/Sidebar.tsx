@@ -1,5 +1,6 @@
 import { cn } from "../utils/cn";
 import { useStore, type Page } from "../store/useStore";
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, LineChart, SmilePlus, ClipboardList,
   ShoppingBag, Gift, Trophy, Award, Bell, Users,
@@ -24,9 +25,10 @@ const NAV_ITEMS: { id: Page; label: string; icon: any; badge?: number; requiredF
 ];
 
 export function Sidebar() {
-  const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, notifications, canAccessFeature } = useStore();
+  const { sidebarOpen, setSidebarOpen, notifications, canAccessFeature } = useStore();
   const currentUser = useStore((s) => s.currentUser);
   const currentCoins = useStore((s) => s.getCurrentCoins());
+  const location = useLocation();
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -74,13 +76,14 @@ export function Sidebar() {
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2 no-scrollbar">
           {visibleNavItems.map((item) => {
             const Icon = item.icon;
-            const active = currentPage === item.id;
+            const path = item.id === "dashboard" ? "/app" : `/app/${item.id}`;
+            const active = location.pathname === path;
             const displayBadge = item.id === "notifications" ? unreadCount : item.badge;
             return (
-              <button
+              <Link
                 key={item.id}
+                to={path}
                 onClick={() => {
-                  setCurrentPage(item.id);
                   if (window.innerWidth < 768) setSidebarOpen(false);
                 }}
                 className={cn(
@@ -98,7 +101,7 @@ export function Sidebar() {
                     {displayBadge}
                   </span>
                 ) : null}
-              </button>
+              </Link>
             );
           })}
         </nav>
@@ -108,13 +111,13 @@ export function Sidebar() {
           <div className="glass rounded-2xl p-3">
             <div className="flex items-center gap-3">
               <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
+                src={currentUser?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"}
+                alt={currentUser?.name}
                 className="avatar-ring h-10 w-10 rounded-full object-cover"
               />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-white">{currentUser.name}</div>
-                <div className="truncate text-xs text-zinc-500">{currentUser.department}</div>
+                <div className="truncate text-sm font-semibold text-white">{currentUser?.name}</div>
+                <div className="truncate text-xs text-zinc-500">{currentUser?.department}</div>
               </div>
             </div>
             <div className="mt-3 flex items-center gap-3 rounded-xl bg-black/40 px-3 py-2 ring-1 ring-white/10">

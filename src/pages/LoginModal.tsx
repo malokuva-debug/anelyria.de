@@ -12,8 +12,8 @@ const DEMO_ACCOUNTS = [
 
 export function LoginModal() {
   const { showLoginModal, setShowLoginModal, showForgotPasswordModal, setShowForgotPasswordModal, login, requestPasswordReset } = useStore();
-  const [email, setEmail] = useState("john.doe@anelyria.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -78,20 +78,21 @@ export function LoginModal() {
     );
   }
 
-  if (!showLoginModal) return null;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const success = login(email, password);
+    try {
+      const success = await login(email, password);
       if (!success) {
-        setError("Invalid credentials. Try one of the demo accounts below.");
-        setLoading(false);
+        setError("Invalid credentials. Please check your email and password.");
       }
-    }, 600);
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -198,7 +199,7 @@ export function LoginModal() {
           {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-white/10" />
-            <span className="text-xs uppercase tracking-wider text-zinc-500">Demo Accounts</span>
+            <span className="text-xs uppercase tracking-wider text-zinc-500">Quick Login</span>
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
@@ -233,6 +234,15 @@ export function LoginModal() {
 }
 
 function ArrowRight(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <line x1="5" y1="12" x2="19" y2="12" />

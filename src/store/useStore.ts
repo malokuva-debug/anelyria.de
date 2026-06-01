@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { authApi } from "../api/auth";
 import type {
   User, ChiEntry, MonthlySnapshot, Task, Achievement,
   UserAchievement, CoinTransaction, Reward, RewardRedemption,
@@ -16,14 +17,15 @@ import {
 export type Page =
   | "dashboard" | "performance" | "chis" | "tasks"
   | "rewards-shop" | "my-rewards" | "leaderboards" | "achievements"
-  | "notifications" | "team" | "analytics" | "import" | "admin";
+  | "notifications" | "team" | "analytics" | "import" | "admin" | "builder";
 
 export type View = "landing" | "app";
 
 interface AppState {
   // Auth
   isLoggedIn: boolean;
-  login: (email: string, password: string) => boolean;
+  token: string | null;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   requestPasswordReset: (email: string) => boolean;
   currentView: View;
@@ -119,7 +121,8 @@ interface AppState {
 
 export const useStore = create<AppState>((set, get) => ({
   // Auth
-  isLoggedIn: false,
+  isLoggedIn: !!localStorage.getItem("token"),
+  token: localStorage.getItem("token"),
   currentView: "landing",
   setCurrentView: (view) => set({ currentView: view }),
   showLoginModal: false,
@@ -127,23 +130,30 @@ export const useStore = create<AppState>((set, get) => ({
   showForgotPasswordModal: false,
   setShowForgotPasswordModal: (show) => set({ showForgotPasswordModal: show }),
 
-  login: (email, password) => {
-    const user = USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) return false;
-    if (password.length < 6) return false;
-    set({
-      isLoggedIn: true,
-      currentView: "app",
-      showLoginModal: false,
-      showForgotPasswordModal: false,
-      currentUser: user,
-    });
-    return true;
+  login: async (email, password) => {
+    try {
+      const response = await authApi.login({ email, password });
+      localStorage.setItem("token", response.token);
+      set({
+        isLoggedIn: true,
+        token: response.token,
+        currentView: "app",
+        showLoginModal: false,
+        showForgotPasswordModal: false,
+        currentUser: response.user as any,
+      });
+      return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
+    }
   },
 
   logout: () => {
+    localStorage.removeItem("token");
     set({
       isLoggedIn: false,
+      token: null,
       currentView: "landing",
       currentPage: "dashboard",
     });
@@ -246,7 +256,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (currentCoins < reward.coinPrice) return;
     const redemption: RewardRedemption = {
       id: `rr-${Date.now()}`,
-      userId: CURRENT_USER_ID,
+      userId: state.currentUser.id,
       rewardId,
       coinsSpent: reward.coinPrice,
       status: "pending",
@@ -254,7 +264,7 @@ export const useStore = create<AppState>((set, get) => ({
     };
     const newTx: CoinTransaction = {
       id: `tx-${Date.now()}`,
-      userId: CURRENT_USER_ID,
+      userId: state.currentUser.id,
       amount: -reward.coinPrice,
       reason: `Redeemed: ${reward.title}`,
       type: "redemption",
@@ -263,7 +273,7 @@ export const useStore = create<AppState>((set, get) => ({
     };
     const notif: Notification = {
       id: `n-${Date.now()}`,
-      userId: CURRENT_USER_ID,
+      userId: state.currentUser.id,
       title: "Reward Redeemed",
       message: `You've redeemed "${reward.title}". It will be processed within 24h.`,
       type: "redemption",
@@ -421,6 +431,7 @@ export const useStore = create<AppState>((set, get) => ({
   // RBAC
   canAccessFeature: (feature) => {
     const user = get().currentUser;
+    if (!user) return false;
     const level: Record<Role, number> = { employee: 1, team_lead: 2, manager: 3, admin: 4 };
     const userLevel = level[user.role];
     switch (feature) {
