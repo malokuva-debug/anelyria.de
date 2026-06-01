@@ -92,7 +92,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user in tenant DB
-    const user = await tenantDb.user.findUnique({
+    const user = await tenantDb.user.findFirst({
       where: { email },
       include: { tenant: true }
     });
@@ -116,7 +116,7 @@ router.post('/login', async (req, res) => {
         email: user.email,
         role: user.role,
         tenantSlug: route.tenantSlug,
-        tenantName: user.tenant.name
+        tenantName: (user.tenant as any)?.name || user.tenantId
       }
     });
 
@@ -158,7 +158,7 @@ router.post('/forgot-password', async (req, res) => {
       return res.json({ message: 'If the email exists, a reset link has been sent.' });
     }
 
-    const user = await tenantDb.user.findUnique({ where: { email } });
+    const user = await tenantDb.user.findFirst({ where: { email } });
     if (!user) {
       return res.json({ message: 'If the email exists, a reset link has been sent.' });
     }

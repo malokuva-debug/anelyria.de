@@ -3,6 +3,8 @@
 # Anelyria Platform — Production Setup Script
 # Supports: Local dev, Plesk hosting, Docker, any Node.js host
 # Database: MariaDB / MySQL
+# 
+# Usage: bash setup.sh [--skip-db] [--seed]
 # =============================================================================
 
 set -euo pipefail
@@ -28,18 +30,22 @@ if [ "$NODE_VERSION" -lt 20 ]; then
 fi
 
 SKIP_DB=false
-[[ "${1:-}" == "--skip-db" ]] && SKIP_DB=true
 SEED_DATA=false
-[[ "${1:-}" == "--seed" ]] && SEED_DATA=true
+for arg in "$@"; do
+  case "$arg" in
+    --skip-db) SKIP_DB=true ;;
+    --seed) SEED_DATA=true ;;
+  esac
+done
 
 # ---------- step 1: dependencies ----------
-info "Step 1/6 — Installing dependencies..."
+info "Step 1/6 — Installing dependencies (this also installs server deps and generates Prisma clients)..."
 if [ -d "node_modules" ] && [ -f "package-lock.json" ]; then
   npm ci --silent || npm install --silent
 else
   npm install --silent
 fi
-success "Dependencies installed."
+success "Dependencies installed. Prisma clients generated."
 
 # ---------- step 2: environment ----------
 info "Step 2/6 — Configuring environment..."
@@ -68,60 +74,43 @@ else
     warn "mysql/mariadb client not found."
     info "Suggested: Use Plesk panel to create database, or run 'docker compose up -d postgres'"
     info "Then set DATABASE_URL in .env and run:"
-    info "  npx prisma generate"
-    info "  npx prisma migrate deploy"
+    info "  cd server && npm run db:generate"
+    info "  cd server && npm run db:migrate:master"
   else
-    info "Generating Prisma client..."
-    npx prisma generate --silent
-    info "Running migrations..."
-    npx prisma migrate deploy --silent && success "Migrations applied." || {
-      warn "Migrations failed. Is DATABASE_URL correct in .env?"
-      info "Try: npx prisma db push --accept-data-loss"
+    info "Running master database migrations..."
+    (cd server && npm run db:migrate:master) && success "Migrations applied." || {
+      warn "Migrations failed. Is MASTER_DATABASE_URL correct in .env?"
     }
     if [ "$SEED_DATA" = true ]; then
       info "Seeding database..."
-      npx prisma db seed --silent && success "Database seeded." || warn "Seed failed (non-fatal)."
+      (cd server && npx tsx ../prisma/seed.ts) && success "Database seeded." || warn "Seed failed (non-fatal)."
     fi
   fi
 fi
 
 # ---------- step 4: build ----------
-info "Step 4/6 — Building production bundle..."
+info "Step 4/6 — Building production bundle (frontend + server)..."
 npm run build --silent && success "Build successful." || fail "Build failed."
 
-# ---------- step 5: lint ----------
-info "Step 5/6 — Code quality check..."
-if npm run lint --silent 2>/dev/null; then
-  success "Lint passed."
-else
-  warn "Lint issues detected (non-fatal). Run 'npm run lint' for details."
-fi
-
-# ---------- step 6: ready ----------
-info "Step 6/6 — Setup complete!"
+# ---------- step 5: ready ----------
+info "Step 5/5 — Setup complete!"
 echo ""
 echo "╔══════════════════════════════════════════════════════════════════╗"
 echo "║                                                                  ║"
 echo "║   🟣  Anelyria Platform — Ready!                                 ║"
 echo "║                                                                  ║"
-echo "║   Demo accounts (development seed):                              ║"
-echo "║     Employee :  john.doe@anelyria.com / password123             ║"
-echo "║     Team Lead:  sarah.johnson@anelyria.com / password123        ║"
-echo "║     Manager  :  alex.martinez@anelyria.com / password123        ║"
-echo "║     Admin    :  priya.patel@anelyria.com / password123          ║"
-echo "║                                                                  ║"
 echo "║   Commands:                                                      ║"
-echo "║     npm run dev        — development server                      ║"
-echo "║     npm run build      — production build                        ║"
-echo "║     npm run start      — production server                       ║"
-echo "║     npm run db:studio  — open Prisma Studio                      ║"
+echo "║     npm run dev        — development server (Vite)               ║"
+echo "║     npm run build      — production build (frontend + server)    ║"
+echo "║     npm run start      — production server (Express)             ║"
 echo "║                                                                  ║"
 echo "║   Production Deployment (Plesk):                                 ║"
 echo "║     1. Create MariaDB database in Plesk                          ║"
-echo "║     2. Set DATABASE_URL in .env                                  ║"
-echo "║     3. npx prisma migrate deploy                                 ║"
-echo "║     4. npm run build                                             ║"
-echo "║     5. Configure Node.js app in Plesk pointing to dist/          ║"
+echo "║     2. Set MASTER_DATABASE_URL in .env                           ║"
+echo "║     3. npm install  (triggers postinstall -> server install)     ║"
+echo "║     4. npm run build (triggers prebuild -> server build)         ║"
+echo "║     5. cd server && npm run db:migrate:master                    ║"
+echo "║     6. Configure Node.js app in Plesk pointing to server/        ║"
 echo "║                                                                  ║"
 echo "╚══════════════════════════════════════════════════════════════════╝"
 echo ""
