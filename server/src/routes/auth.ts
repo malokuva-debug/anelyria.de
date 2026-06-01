@@ -6,13 +6,13 @@ import { getMasterDb, getTenantDb } from '../db/connectionManager';
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-router.post('/login', async (req, res) => {
+router.post('/builder-login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const masterDb = getMasterDb();
 
-    // 1. Check if Super Admin
+    // Check if Super Admin
     const superAdmin = await masterDb.superAdmin.findUnique({ where: { email } });
     if (superAdmin && await bcrypt.compare(password, superAdmin.passwordHash)) {
       const token = jwt.sign(
@@ -26,7 +26,20 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // 2. Check UserRoute to find tenant
+    return res.status(401).json({ message: 'Invalid credentials' });
+  } catch (error) {
+    console.error('Builder login error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const masterDb = getMasterDb();
+
+    // Check UserRoute to find tenant
     const route = await masterDb.userRoute.findUnique({ where: { email } });
     if (!route) {
       return res.status(401).json({ message: 'Invalid credentials' });

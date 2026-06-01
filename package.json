@@ -4,7 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:main": "VITE_APP_MODE=main vite",
+    "dev:app": "VITE_APP_MODE=app vite",
     "build": "vite build",
+    "build:main": "VITE_APP_MODE=main vite build",
+    "build:app": "VITE_APP_MODE=app vite build",
     "preview": "vite preview",
     "setup": "bash setup.sh",
     "start": "cd server && npm run start",
