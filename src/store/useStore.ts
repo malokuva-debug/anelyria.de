@@ -24,7 +24,9 @@ export type View = "landing" | "app";
 interface AppState {
   // Auth
   isLoggedIn: boolean;
+  isSuperAdmin: boolean;
   token: string | null;
+  setAuth: (user: any, token: string) => void;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   requestPasswordReset: (email: string) => boolean;
@@ -122,6 +124,7 @@ interface AppState {
 export const useStore = create<AppState>((set, get) => ({
   // Auth
   isLoggedIn: !!localStorage.getItem("token"),
+  isSuperAdmin: localStorage.getItem("isSuperAdmin") === "true",
   token: localStorage.getItem("token"),
   currentView: "landing",
   setCurrentView: (view) => set({ currentView: view }),
@@ -130,18 +133,23 @@ export const useStore = create<AppState>((set, get) => ({
   showForgotPasswordModal: false,
   setShowForgotPasswordModal: (show) => set({ showForgotPasswordModal: show }),
 
+  setAuth: (user, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("isSuperAdmin", user.isSuperAdmin ? "true" : "false");
+    set({
+      isLoggedIn: true,
+      isSuperAdmin: !!user.isSuperAdmin,
+      token,
+      currentUser: user,
+      currentView: "app",
+      showLoginModal: false,
+    });
+  },
+
   login: async (email, password) => {
     try {
       const response = await authApi.login({ email, password });
-      localStorage.setItem("token", response.token);
-      set({
-        isLoggedIn: true,
-        token: response.token,
-        currentView: "app",
-        showLoginModal: false,
-        showForgotPasswordModal: false,
-        currentUser: response.user as any,
-      });
+      get().setAuth(response.user, response.token);
       return true;
     } catch (error) {
       console.error("Login failed:", error);
@@ -151,8 +159,10 @@ export const useStore = create<AppState>((set, get) => ({
 
   logout: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("isSuperAdmin");
     set({
       isLoggedIn: false,
+      isSuperAdmin: false,
       token: null,
       currentView: "landing",
       currentPage: "dashboard",

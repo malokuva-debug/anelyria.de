@@ -2,7 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
-import App from "./App";
+import AppMain from "./AppMain";
+import AppApp from "./AppApp";
+
+const mode = import.meta.env.VITE_APP_MODE || 'app';
+const App = mode === 'main' ? AppMain : AppApp;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

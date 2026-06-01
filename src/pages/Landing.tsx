@@ -6,6 +6,10 @@ import { cn } from "../utils/cn";
 export function LandingPage({ onLoginClick }: { onLoginClick?: () => void }) {
   const { setShowLoginModal } = useStore();
   const handleLogin = () => {
+    if (import.meta.env.VITE_APP_MODE === 'main') {
+      window.location.href = 'https://app.anelyria.de';
+      return;
+    }
     if (onLoginClick) onLoginClick();
     else setShowLoginModal(true);
   };
