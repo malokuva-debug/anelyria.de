@@ -10,11 +10,11 @@ function AppMain() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/builder/login" element={
-        isLoggedIn && isSuperAdmin ? <Navigate to="/builder" /> : <BuilderLoginPage />
+      <Route path="/lyriabuilder/login" element={
+        isLoggedIn && isSuperAdmin ? <Navigate to="/lyriabuilder" /> : <BuilderLoginPage />
       } />
-      <Route path="/builder/*" element={
-        isLoggedIn && isSuperAdmin ? <BuilderPage /> : <Navigate to="/builder/login" />
+      <Route path="/lyriabuilder/*" element={
+        isLoggedIn && isSuperAdmin ? <BuilderPage /> : <Navigate to="/lyriabuilder/login" />
       } />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

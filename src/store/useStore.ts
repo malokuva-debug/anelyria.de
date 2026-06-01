@@ -28,8 +28,10 @@ interface AppState {
   token: string | null;
   setAuth: (user: any, token: string) => void;
   login: (email: string, password: string) => Promise<boolean>;
+  superAdminLogin: (email: string, password: string) => Promise<boolean>;
+  superAdminLogout: () => void;
   logout: () => void;
-  requestPasswordReset: (email: string) => boolean;
+  requestPasswordReset: (email: string) => Promise<boolean>;
   currentView: View;
   setCurrentView: (view: View) => void;
   showLoginModal: boolean;
@@ -157,6 +159,29 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
+  superAdminLogin: async (email, password) => {
+    try {
+      const response = await authApi.builderLogin({ email, password });
+      get().setAuth(response.user, response.token);
+      return true;
+    } catch (error) {
+      console.error("Super admin login failed:", error);
+      return false;
+    }
+  },
+
+  superAdminLogout: () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("isSuperAdmin");
+    set({
+      isLoggedIn: false,
+      isSuperAdmin: false,
+      token: null,
+      currentView: "landing",
+      currentPage: "dashboard",
+    });
+  },
+
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("isSuperAdmin");
@@ -169,13 +194,15 @@ export const useStore = create<AppState>((set, get) => ({
     });
   },
 
-  requestPasswordReset: (email) => {
-    const user = USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) return false;
-    set({ showForgotPasswordModal: false });
-    // In production: calls POST /api/auth/forgot-password which sends email
-    alert(`Password reset link sent to ${email}\n\n(In production, a secure email would be dispatched via your MariaDB-backed auth service.)`);
-    return true;
+  requestPasswordReset: async (email) => {
+    try {
+      await authApi.forgotPassword({ email });
+      set({ showForgotPasswordModal: false });
+      return true;
+    } catch (error) {
+      console.error("Password reset request failed:", error);
+      return false;
+    }
   },
 
   // Navigation
