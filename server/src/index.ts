@@ -40,7 +40,7 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/builder-login', authLimiter);
 
 // Serve static files from the built frontend
-const distPath = path.join(__dirname, '../../dist');
+const distPath = path.join(__dirname, '../public');
 app.use(express.static(distPath));
 
 // API Health Check
