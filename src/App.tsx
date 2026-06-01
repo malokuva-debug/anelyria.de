@@ -1,8 +1,10 @@
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { Dashboard } from "./pages/Dashboard";
 import { LoginModal } from "./pages/LoginModal";
 import { LandingPage } from "./pages/Landing";
+import { BuilderPage } from "./pages/BuilderPage";
 import {
   PerformancePage, CHIsPage, TasksPage, RewardsShopPage,
   MyRewardsPage, LeaderboardsPage, AchievementsPage,
@@ -11,34 +13,14 @@ import {
 import { useStore } from "./store/useStore";
 import { useEffect } from "react";
 
-function PageRouter() {
-  const currentPage = useStore((s) => s.currentPage);
-  switch (currentPage) {
-    case "dashboard": return <Dashboard />;
-    case "performance": return <PerformancePage />;
-    case "chis": return <CHIsPage />;
-    case "tasks": return <TasksPage />;
-    case "rewards-shop": return <RewardsShopPage />;
-    case "my-rewards": return <MyRewardsPage />;
-    case "leaderboards": return <LeaderboardsPage />;
-    case "achievements": return <AchievementsPage />;
-    case "notifications": return <NotificationsPage />;
-    case "team": return <TeamPage />;
-    case "analytics": return <AnalyticsPage />;
-    case "import": return <ImportPage />;
-    case "admin": return <AdminPage />;
-    default: return <Dashboard />;
-  }
-}
-
-function AuthenticatedShell() {
+function AuthenticatedShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen bg-black text-white">
       <Sidebar />
       <div className="relative z-10 flex min-w-0 flex-1 flex-col">
         <Header />
         <main className="flex-1">
-          <PageRouter />
+          {children}
         </main>
       </div>
       <div className="blob-1" />
@@ -50,33 +32,52 @@ function AuthenticatedShell() {
 }
 
 function App() {
-  const { currentView, isLoggedIn, setShowLoginModal } = useStore();
+  const { isLoggedIn, setShowLoginModal, currentView } = useStore();
+  const location = useLocation();
 
-  // Redirect to login if trying to access dashboard without being logged in
-  useEffect(() => {
-    if (currentView === "app" && !isLoggedIn) {
-      // Auto-redirect to landing if somehow not logged in
-      useStore.setState({ currentView: "landing" });
-    }
-  }, [currentView, isLoggedIn]);
-
-  // Auto-open login if someone tries to navigate but isn't logged in
   const handleLoginRequest = () => {
     setShowLoginModal(true);
   };
 
-  if (currentView === "landing" || !isLoggedIn) {
-    return (
-      <>
-        <LandingPage onLoginClick={handleLoginRequest} />
-        <LoginModal />
-      </>
-    );
+  // If not logged in and not on landing, redirect to landing
+  if (!isLoggedIn && location.pathname !== "/" && !location.pathname.startsWith("/builder")) {
+    // We allow /builder to have its own login or handle it separately
   }
 
   return (
     <>
-      <AuthenticatedShell />
+      <Routes>
+        <Route path="/" element={
+          isLoggedIn ? <Navigate to="/app" /> : <LandingPage onLoginClick={handleLoginRequest} />
+        } />
+        
+        <Route path="/builder" element={<BuilderPage />} />
+
+        <Route path="/app/*" element={
+          isLoggedIn ? (
+            <AuthenticatedShell>
+              <Routes>
+                <Route index element={<Dashboard />} />
+                <Route path="performance" element={<PerformancePage />} />
+                <Route path="chis" element={<CHIsPage />} />
+                <Route path="tasks" element={<TasksPage />} />
+                <Route path="rewards-shop" element={<RewardsShopPage />} />
+                <Route path="my-rewards" element={<MyRewardsPage />} />
+                <Route path="leaderboards" element={<LeaderboardsPage />} />
+                <Route path="achievements" element={<AchievementsPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="team" element={<TeamPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="import" element={<ImportPage />} />
+                <Route path="admin" element={<AdminPage />} />
+                <Route path="*" element={<Navigate to="/app" />} />
+              </Routes>
+            </AuthenticatedShell>
+          ) : (
+            <Navigate to="/" />
+          )
+        } />
+      </Routes>
       <LoginModal />
     </>
   );

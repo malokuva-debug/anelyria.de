@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"  // MariaDB uses mysql provider in Prisma
+  provider = "mysql" // MariaDB uses mysql provider in Prisma
   url      = env("DATABASE_URL")
 }
 
@@ -51,14 +51,14 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  token     String   @unique
+  token     String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([userId])
@@ -69,48 +69,48 @@ model PasswordResetToken {
 // =============================================================================
 
 model Tenant {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  name            String
-  logo            String?  @db.Text
-  primaryColor    String?  @default("#8b5cf6")
+  id                    String   @id @default(cuid())
+  slug                  String   @unique
+  name                  String
+  logo                  String?  @db.Text
+  primaryColor          String?  @default("#8b5cf6")
   // Custom metric naming
-  chiMetricName   String   @default("CHI")
-  inkMetricName   String   @default("INK")
-  callsMetricName String   @default("Calls")
-  coinName        String   @default("Coins")
+  chiMetricName         String   @default("CHI")
+  inkMetricName         String   @default("INK")
+  callsMetricName       String   @default("Calls")
+  coinName              String   @default("Coins")
   // Billing interval
-  billingStartDay Int      @default(1)
-  billingEndDay   Int      @default(31)
+  billingStartDay       Int      @default(1)
+  billingEndDay         Int      @default(31)
   // Settings
-  chiBonusL1      Float    @default(0.80)
-  chiBonusL2      Float    @default(0.85)
-  chiBonusL3      Float    @default(0.90)
-  chiRewardL1     Int      @default(100)
-  chiRewardL2     Int      @default(150)
-  chiRewardL3     Int      @default(250)
-  monthlyCoinBonus Int     @default(50)
-  streakDailyCoin Int      @default(5)
-  taskAutoApprove Boolean  @default(true)
-  allowSelfRegistration Boolean @default(false)
-  passwordMinLength Int    @default(10)
-  sessionTimeoutMinutes Int @default(480)
+  chiBonusL1            Float    @default(0.80)
+  chiBonusL2            Float    @default(0.85)
+  chiBonusL3            Float    @default(0.90)
+  chiRewardL1           Int      @default(100)
+  chiRewardL2           Int      @default(150)
+  chiRewardL3           Int      @default(250)
+  monthlyCoinBonus      Int      @default(50)
+  streakDailyCoin       Int      @default(5)
+  taskAutoApprove       Boolean  @default(true)
+  allowSelfRegistration Boolean  @default(false)
+  passwordMinLength     Int      @default(10)
+  sessionTimeoutMinutes Int      @default(480)
   // Status
-  active          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  users           User[]
-  teams           Team[]
-  metrics         MetricEntry[]
-  tasks           Task[]
-  achievements    Achievement[]
-  rewards         Reward[]
-  redemptions     RewardRedemption[]
-  transactions    CoinTransaction[]
-  notifications   Notification[]
-  importBatches   ImportBatch[]
-  auditLogs       AuditLog[]
+  users         User[]
+  teams         Team[]
+  metrics       MetricEntry[]
+  tasks         Task[]
+  achievements  Achievement[]
+  rewards       Reward[]
+  redemptions   RewardRedemption[]
+  transactions  CoinTransaction[]
+  notifications Notification[]
+  importBatches ImportBatch[]
+  auditLogs     AuditLog[]
 }
 
 // =============================================================================
@@ -125,36 +125,37 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  tenantId      String
-  employeeId    String
-  email         String
-  passwordHash  String   @db.Text
-  name          String
-  role          Role     @default(employee)
-  avatar        String?  @db.Text
-  department    String   @default("")
-  teamId        String?
-  joinedAt      DateTime @default(now())
-  streakDays    Int      @default(0)
-  active        Boolean  @default(true)
-  lastLoginAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(cuid())
+  tenantId     String
+  employeeId   String
+  email        String
+  passwordHash String    @db.Text
+  name         String
+  role         Role      @default(employee)
+  avatar       String?   @db.Text
+  department   String    @default("")
+  teamId       String?
+  joinedAt     DateTime  @default(now())
+  streakDays   Int       @default(0)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  team          Team?    @relation(fields: [teamId], references: [id])
-  metrics       MetricEntry[]
-  tasks         TaskAssignment[]
-  achievements  UserAchievement[]
-  transactions  CoinTransaction[]
-  redemptions   RewardRedemption[]
-  notifications Notification[]
-  auditLogs     AuditLog[]
-  uploads       ImportBatch[]
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  team           Team?                @relation("TeamMembers", fields: [teamId], references: [id])
+  ledTeam        Team[]               @relation("TeamLead")
+  metrics        MetricEntry[]
+  tasks          TaskAssignment[]
+  achievements   UserAchievement[]
+  transactions   CoinTransaction[]
+  redemptions    RewardRedemption[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  uploads        ImportBatch[]
   passwordResets PasswordResetToken[]
-  accounts      Account[]
-  sessions      Session[]
+  accounts       Account[]
+  sessions       Session[]
 
   @@unique([tenantId, employeeId])
   @@unique([tenantId, email])
@@ -162,16 +163,16 @@ model User {
 }
 
 model Team {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   tenantId   String
   name       String
-  department String   @default("")
+  department String  @default("")
   leadId     String?
 
-  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lead       User?    @relation(fields: [leadId], references: [id])
-  members    User[]
-  tasks      Task[]
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead    User?  @relation("TeamLead", fields: [leadId], references: [id])
+  members User[] @relation("TeamMembers")
+  tasks   Task[]
 
   @@unique([tenantId, name])
 }
@@ -193,23 +194,25 @@ enum MetricSource {
 }
 
 model MetricEntry {
-  id            String      @id @default(cuid())
+  id            String       @id @default(cuid())
   tenantId      String
   employeeId    String
-  date          DateTime    @default(now())
+  date          DateTime     @default(now())
   // The three metrics
   chi           ChiType
-  ink           Int         @default(0)     // 0-100
-  callsPerHour  Float       @default(0)
+  ink           Int          @default(0) // 0-100
+  callsPerHour  Float        @default(0)
   // Source tracking
   source        MetricSource
   importBatchId String?
-  notes         String?     @db.Text
+  notes         String?      @db.Text
   category      String?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime     @default(now())
 
-  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  importBatch   ImportBatch? @relation(fields: [importBatchId], references: [id])
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  importBatch ImportBatch? @relation(fields: [importBatchId], references: [id])
+  User        User?        @relation(fields: [userId], references: [id])
+  userId      String?
 
   @@index([tenantId, employeeId, date])
   @@index([tenantId, chi])
@@ -234,41 +237,41 @@ enum TaskRecurrence {
 }
 
 model Task {
-  id               String        @id @default(cuid())
+  id               String         @id @default(cuid())
   tenantId         String
   title            String
-  description      String        @default("") @db.Text
-  rewardCoins      Int           @default(0)
+  description      String         @default("") @db.Text
+  rewardCoins      Int            @default(0)
   startDate        DateTime
   endDate          DateTime
-  recurring        Boolean       @default(false)
+  recurring        Boolean        @default(false)
   recurrence       TaskRecurrence @default(none)
-  category         String        @default("general")
-  target           Int           @default(1)
-  approvalRequired Boolean       @default(false)
-  status           TaskStatus    @default(active)
+  category         String         @default("general")
+  target           Int            @default(1)
+  approvalRequired Boolean        @default(false)
+  status           TaskStatus     @default(active)
   createdBy        String
   teamId           String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
-  tenant           Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  team             Team?         @relation(fields: [teamId], references: [id])
-  assignments      TaskAssignment[]
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  team        Team?            @relation(fields: [teamId], references: [id])
+  assignments TaskAssignment[]
 
   @@index([tenantId, status])
 }
 
 model TaskAssignment {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   taskId      String
   userId      String
-  progress    Int      @default(0)
-  completed   Boolean  @default(false)
+  progress    Int       @default(0)
+  completed   Boolean   @default(false)
   completedAt DateTime?
 
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, userId])
 }
@@ -301,8 +304,8 @@ model CoinTransaction {
   referenceType String?
   createdAt     DateTime   @default(now())
 
-  tenant        Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, userId, createdAt])
 }
@@ -323,36 +326,36 @@ enum RedemptionStatus {
 }
 
 model Reward {
-  id            String            @id @default(cuid())
-  tenantId      String
-  title         String
-  description   String            @default("") @db.Text
-  coinPrice     Int
-  category      RewardCategory
-  image         String?           @db.Text
-  stock         Int               @default(0)
-  active        Boolean           @default(true)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id          String         @id @default(cuid())
+  tenantId    String
+  title       String
+  description String         @default("") @db.Text
+  coinPrice   Int
+  category    RewardCategory
+  image       String?        @db.Text
+  stock       Int            @default(0)
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  redemptions   RewardRedemption[]
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  redemptions RewardRedemption[]
 }
 
 model RewardRedemption {
-  id          String          @id @default(cuid())
-  tenantId    String
-  userId      String
-  rewardId    String
-  coinsSpent  Int
-  status      RedemptionStatus @default(pending)
-  reviewedBy  String?
-  reviewedAt  DateTime?
-  createdAt   DateTime        @default(now())
+  id         String           @id @default(cuid())
+  tenantId   String
+  userId     String
+  rewardId   String
+  coinsSpent Int
+  status     RedemptionStatus @default(pending)
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime         @default(now())
 
-  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reward      Reward          @relation(fields: [rewardId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reward Reward @relation(fields: [rewardId], references: [id])
 
   @@index([tenantId, userId, status])
 }
@@ -362,31 +365,31 @@ model RewardRedemption {
 // =============================================================================
 
 model Achievement {
-  id            String           @id @default(cuid())
-  tenantId      String
-  title         String
-  description   String           @default("") @db.Text
-  icon          String           @default("badge-default")
-  rewardCoins   Int              @default(0)
-  criteria      String
-  color         String           @default("from-purple-500 to-violet-600")
-  active        Boolean          @default(true)
-  createdAt     DateTime         @default(now())
+  id          String   @id @default(cuid())
+  tenantId    String
+  title       String
+  description String   @default("") @db.Text
+  icon        String   @default("badge-default")
+  rewardCoins Int      @default(0)
+  criteria    String
+  color       String   @default("from-purple-500 to-violet-600")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
-  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  unlocks       UserAchievement[]
+  tenant  Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unlocks UserAchievement[]
 
   @@unique([tenantId, criteria])
 }
 
 model UserAchievement {
-  id            String       @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
   achievementId String
-  unlockedAt    DateTime     @default(now())
+  unlockedAt    DateTime @default(now())
 
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement   Achievement  @relation(fields: [achievementId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id])
 
   @@unique([userId, achievementId])
 }
@@ -416,8 +419,8 @@ model Notification {
   link      String?
   createdAt DateTime         @default(now())
 
-  tenant    Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, userId, read, createdAt])
 }
@@ -435,44 +438,46 @@ enum ImportStatus {
 }
 
 model ImportBatch {
-  id            String      @id @default(cuid())
+  id            String       @id @default(cuid())
   tenantId      String
   uploadedBy    String
   fileName      String
-  totalRows     Int         @default(0)
-  validRows     Int         @default(0)
-  invalidRows   Int         @default(0)
-  duplicateRows Int         @default(0)
+  totalRows     Int          @default(0)
+  validRows     Int          @default(0)
+  invalidRows   Int          @default(0)
+  duplicateRows Int          @default(0)
   status        ImportStatus @default(pending)
   periodStart   DateTime
   periodEnd     DateTime
-  rawContent    String?     @db.Text
+  rawContent    String?      @db.Text
   completedAt   DateTime?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime     @default(now())
 
-  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  rows          CsvImportRow[]
-  metrics       MetricEntry[]
+  tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rows    CsvImportRow[]
+  metrics MetricEntry[]
+  User    User?          @relation(fields: [userId], references: [id])
+  userId  String?
 
   @@index([tenantId, createdAt])
 }
 
 model CsvImportRow {
-  id            String      @id @default(cuid())
-  batchId       String
-  employeeId    String?
-  email         String?
-  employeeName  String?
-  date          String?
-  chi           String?
-  ink           Int?
-  callsPerHour  Float?
-  notes         String?     @db.Text
-  status        String      @default("pending")
-  errorReason   String?
-  rawLine       String      @db.Text
+  id           String  @id @default(cuid())
+  batchId      String
+  employeeId   String?
+  email        String?
+  employeeName String?
+  date         String?
+  chi          String?
+  ink          Int?
+  callsPerHour Float?
+  notes        String? @db.Text
+  status       String  @default("pending")
+  errorReason  String?
+  rawLine      String  @db.Text
 
-  batch         ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 }
 
 // =============================================================================
@@ -480,19 +485,19 @@ model CsvImportRow {
 // =============================================================================
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  tenantId    String
-  userId      String
-  action      String
-  entityType  String
-  entityId    String
-  details     String   @db.Text
-  ip          String?
-  userAgent   String?  @db.Text
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  tenantId   String
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  details    String   @db.Text
+  ip         String?
+  userAgent  String?  @db.Text
+  createdAt  DateTime @default(now())
 
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
 
   @@index([tenantId, createdAt])
   @@index([tenantId, entityType, entityId])

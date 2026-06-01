@@ -1,5 +1,6 @@
 import { useStore } from "../store/useStore";
 import { Menu, Search, Bell, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Header() {
   const { searchQuery, setSearchQuery, setSidebarOpen, sidebarOpen, logout } = useStore();
@@ -29,8 +30,8 @@ export function Header() {
         />
       </div>
 
-      <button
-        onClick={() => useStore.setState({ currentPage: "notifications" })}
+      <Link
+        to="/app/notifications"
         className="relative rounded-lg p-2 text-zinc-400 hover:bg-white/5"
       >
         <Bell className="h-5 w-5" />
@@ -39,7 +40,7 @@ export function Header() {
             {unreadNotifs}
           </span>
         )}
-      </button>
+      </Link>
 
       <div className="flex items-center gap-2">
         <button
@@ -52,11 +53,11 @@ export function Header() {
         </button>
         <button className="flex items-center gap-2 rounded-xl bg-white/5 p-1 pr-3 ring-1 ring-white/10 hover:bg-white/10">
           <img
-            src={currentUser.avatar}
-            alt={currentUser.name}
+            src={currentUser?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"}
+            alt={currentUser?.name}
             className="h-8 w-8 rounded-lg object-cover"
           />
-          <span className="hidden text-sm font-medium text-white md:inline">{currentUser.name.split(" ")[0]}</span>
+          <span className="hidden text-sm font-medium text-white md:inline">{currentUser?.name?.split(" ")[0]}</span>
         </button>
       </div>
     </header>
