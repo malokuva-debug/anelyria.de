@@ -31,7 +31,7 @@ export function BuilderLoginPage() {
       }
 
       setAuth(data.user, data.token);
-      navigate('/builder');
+      navigate('/lyriabuilder');
     } catch (err: any) {
       setError(err.message);
     } finally {
