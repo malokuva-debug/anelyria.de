@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import path from 'path';
 import mysql from 'mysql2/promise';
 import { getMasterDb } from './connectionManager';
 import bcrypt from 'bcryptjs';
@@ -36,7 +37,7 @@ export async function provisionTenant(name: string, slug: string, managerEmail: 
   
   try {
     execSync(`DATABASE_URL="${tenantDbUrl}" npx prisma migrate deploy --schema=../prisma/schema.prisma`, {
-      cwd: __dirname,
+      cwd: path.join(__dirname, '..'),
       stdio: 'inherit',
     });
   } catch (error) {
