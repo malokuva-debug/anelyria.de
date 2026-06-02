@@ -73,12 +73,12 @@ else
   if ! command_exists mysql && ! command_exists mariadb; then
     warn "mysql/mariadb client not found."
     info "Suggested: Use Plesk panel to create database, or run 'docker compose up -d postgres'"
-    info "Then set DATABASE_URL in .env and run:"
-    info "  cd server && npm run db:generate"
-    info "  cd server && npm run db:migrate:master"
+            info "Then set DATABASE_URL in .env and run:"
+            info "  cd server && npm run db:generate"
+            info "  cd server && npm run db:push:master"
   else
-    info "Running master database migrations..."
-    (cd server && npm run db:migrate:master) && success "Migrations applied." || {
+    info "Running master database setup..."
+          (cd server && npm run db:push:master) && success "Database tables created." || {
       warn "Migrations failed. Is MASTER_DATABASE_URL correct in .env?"
     }
     if [ "$SEED_DATA" = true ]; then
@@ -107,10 +107,11 @@ echo "║                                                                  ║"
 echo "║   Production Deployment (Plesk):                                 ║"
 echo "║     1. Create MariaDB database in Plesk                          ║"
 echo "║     2. Set MASTER_DATABASE_URL in .env                           ║"
-echo "║     3. npm install  (triggers postinstall -> server install)     ║"
-echo "║     4. npm run build (triggers prebuild -> server build)         ║"
-echo "║     5. cd server && npm run db:migrate:master                    ║"
-echo "║     6. Configure Node.js app in Plesk pointing to server/        ║"
+echo "║     3. npm install       (also installs server deps)             ║"
+echo "║     4. npm run build     (frontend + server in one step)         ║"
+echo "║     5. cd server && npm run db:push:master                       ║"
+echo "║     6. cd server && npm run db:seed:master                       ║"
+echo "║     7. Configure Node.js app in Plesk pointing to server/        ║"
 echo "║                                                                  ║"
 echo "╚══════════════════════════════════════════════════════════════════╝"
 echo ""

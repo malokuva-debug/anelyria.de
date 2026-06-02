@@ -7,7 +7,7 @@ export function LandingPage({ onLoginClick }: { onLoginClick?: () => void }) {
   const { setShowLoginModal } = useStore();
   const handleLogin = () => {
     if (import.meta.env.VITE_APP_MODE === 'main') {
-      window.location.href = 'https://app.anelyria.de';
+      window.location.href = 'https://app.anelyria.de/login';
       return;
     }
     if (onLoginClick) onLoginClick();
