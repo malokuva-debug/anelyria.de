@@ -66,7 +66,7 @@ export async function provisionTenant(name: string, slug: string, managerEmail: 
   });
 
   // 4. Create initial admin user in the tenant DB
-  const { PrismaClient } = await import('@prisma/client');
+  const { PrismaClient } = await import('../../generated/tenant-client');
   const tenantPrisma = new PrismaClient({
     datasources: { db: { url: tenantDbUrl } }
   });

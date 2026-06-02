@@ -189,32 +189,29 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ---
 
-## 7. Install Dependencies & Build
+## 7. Install Dependencies Only (No Build Step)
 
-This is the only npm command you need to run. It handles everything:
+> **The project is pre-built!** Frontend, server, and Prisma clients are already compiled.
+> On Plesk you only need `--ignore-scripts` to skip postinstall hooks.
 
 ```bash
 cd /httpdocs
-npm install
+npm install --ignore-scripts
+cd /httpdocs/server
+npm install --ignore-scripts
+cd /httpdocs
 ```
 
-This single command:
-1. Installs frontend dependencies from the root `package.json`
-2. Automatically runs `cd server && npm install` (via `postinstall` script)
-3. The server `postinstall` automatically generates both Prisma clients
+This installs runtime dependencies WITHOUT running any build steps.
 
-Then build everything:
+**Why `--ignore-scripts`?**
+- Prisma clients are already generated at `server/generated/`
+- The Vite frontend is already built at `server/public/`
+- The TypeScript server is already compiled at `server/dist/`
+- No build toolchain (tsc, vite, prisma generate) is needed on Plesk
 
-```bash
-npm run build
-```
-
-This single command:
-1. Builds the Vite frontend into `server/public/`
-2. Compiles the TypeScript server code into `server/dist/`
-3. Regenerates both Prisma clients with the latest schema
-
-> **Note:** You can run these from Plesk's **Node.js** panel by clicking the **npm install** and **npm run build** buttons, or via the Plesk File Manager's terminal if available.
+> **Note:** If you ever need to rebuild, run the full commands locally and re-upload,
+> or run `npm run build` on Plesk if build tools are available.
 
 ---
 
@@ -224,10 +221,10 @@ Create the tables in `anelyria_master`. Since the project uses Prisma with a sch
 
 ```bash
 cd /httpdocs/server
-npm run db:push:master
+npx prisma db push --schema=prisma-master/schema.prisma
 ```
 
-This synchronizes `prisma-master/schema.prisma` with your master database, creating `UserRoute`, `SuperAdmin`, and `Tenant` tables. (If you have existing migration files later, use `npm run db:migrate:master` instead.)
+This synchronizes `prisma-master/schema.prisma` with your master database, creating `UserRoute`, `SuperAdmin`, and `Tenant` tables. (If you have existing migration files later, use `npx prisma migrate deploy --schema=prisma-master/schema.prisma` instead.)
 
 ---
 
@@ -237,7 +234,7 @@ Create the initial super admin account so you can log into LyriaBuilder:
 
 ```bash
 cd /httpdocs/server
-npm run db:seed:master
+npx tsx prisma/seed-master.ts
 ```
 
 This creates a super admin with:
