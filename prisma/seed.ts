@@ -1,4 +1,4 @@
-import { PrismaClient, Role, ChiType, ChiSource, CoinTxType, RewardCategory, RedemptionStatus, NotificationType, TaskRecurrence, TaskStatus } from '@prisma/client';
+import { PrismaClient, Role, ChiType, CoinTxType, RewardCategory, RedemptionStatus, NotificationType, TaskRecurrence, TaskStatus } from '../server/generated/tenant-client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();

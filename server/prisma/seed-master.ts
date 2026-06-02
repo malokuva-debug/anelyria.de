@@ -1,4 +1,4 @@
-import { PrismaClient as MasterPrismaClient } from '../src/generated/master-client';
+import { PrismaClient as MasterPrismaClient } from '../generated/master-client';
 import * as bcrypt from 'bcryptjs';
 
 const masterPrisma = new MasterPrismaClient();
