@@ -9,15 +9,14 @@
     "dev": "vite",
     "dev:main": "VITE_APP_MODE=main vite",
     "dev:app": "VITE_APP_MODE=app vite",
-    "build": "vite build",
-    "build:main": "VITE_APP_MODE=main vite build",
-    "build:app": "VITE_APP_MODE=app vite build",
+    "build": "vite build && cd server && npm run build",
+    "build:main": "VITE_APP_MODE=main vite build && cd server && npm run build",
+    "build:app": "VITE_APP_MODE=app vite build && cd server && npm run build",
     "preview": "vite preview",
     "setup": "bash setup.sh",
     "start": "cd server && npm run start",
     "server:dev": "cd server && npm run dev",
-    "postinstall": "cd server && npm install",
-    "prebuild": "cd server && npm run build"
+    "postinstall": "cd server && npm install"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.4",

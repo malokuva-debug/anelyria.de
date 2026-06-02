@@ -1,22 +1,7 @@
 #!/bin/bash
-# deploy-app.sh
-
-echo "Deploying app branch (app.anelyria.de)..."
-
-# Ensure we are on the app branch
-git checkout app
-git pull origin app
-
-# Install dependencies
-npm install
-cd server && npm install
-cd ..
-
-# Build the frontend for app
-npm run build:app
-
-# Restart the Node.js application
-mkdir -p tmp
-touch tmp/restart.txt
-
-echo "Deployment of app branch completed."
+# deploy-app.sh — OBSOLETE
+# 
+# As of the single-app architecture, there is no separate app branch or app deployment.
+# Both anelyria.de and app.anelyria.de are served from the same Node.js application.
+#
+# Use plesk/deploy-main.sh (now unified as deploy.sh) for all deployments.
