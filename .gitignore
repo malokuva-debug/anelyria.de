@@ -35,6 +35,10 @@ lerna-debug.log*
 coverage/
 .nyc_output/
 
+# Temporary build scripts
+build-sandbox.js
+run-build.js
+
 # Misc
 *.tsbuildinfo
 next-env.d.ts

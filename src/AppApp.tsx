@@ -3,6 +3,8 @@ import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { Dashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/LoginPage";
+import { BuilderLoginPage } from "./pages/BuilderLoginPage";
+import { BuilderPage } from "./pages/BuilderPage";
 import {
   PerformancePage, CHIsPage, TasksPage, RewardsShopPage,
   MyRewardsPage, LeaderboardsPage, AchievementsPage,
@@ -29,12 +31,14 @@ function AuthenticatedShell({ children }: { children: React.ReactNode }) {
 }
 
 function AppApp() {
-  const { isLoggedIn } = useStore();
+  const { isLoggedIn, isSuperAdmin } = useStore();
 
   return (
     <Routes>
+      {/* Tenant login — public */}
       <Route path="/login" element={isLoggedIn ? <Navigate to="/app" /> : <LoginPage />} />
       
+      {/* Tenant dashboard — requires tenant auth */}
       <Route path="/app/*" element={
         isLoggedIn ? (
           <AuthenticatedShell>
@@ -59,7 +63,16 @@ function AppApp() {
           <Navigate to="/login" />
         )
       } />
+
+      {/* LyriaBuilder (super admin) — public login, protected dashboard */}
+      <Route path="/lyriabuilder/login" element={
+        isLoggedIn && isSuperAdmin ? <Navigate to="/lyriabuilder" /> : <BuilderLoginPage />
+      } />
+      <Route path="/lyriabuilder/*" element={
+        isLoggedIn && isSuperAdmin ? <BuilderPage /> : <Navigate to="/lyriabuilder/login" />
+      } />
       
+      {/* Catch-all */}
       <Route path="*" element={<Navigate to={isLoggedIn ? "/app" : "/login"} />} />
     </Routes>
   );
