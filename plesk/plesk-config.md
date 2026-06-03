@@ -1,1 +1,0 @@
-# Obsolete - see PLESK_DEPLOYMENT_DE.md for deployment instructions
